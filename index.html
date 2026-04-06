@@ -1230,7 +1230,44 @@ function setFromArray(value) {
   return new Set(Array.isArray(value) ? value.map(String) : []);
 }
 
+function createEmptyFilters() {
+  return {
+    continents: new Set(),
+    countries: new Set(),
+    periods: new Set(),
+    types: new Set(),
+    search: '',
+    favoritesOnly: false,
+  };
+}
+
+function hasUrlFilterState(params) {
+  return ['continent', 'country', 'period', 'type', 'q', 'favorites'].some(key => params.has(key));
+}
+
+function loadFiltersFromUrl() {
+  const empty = createEmptyFilters();
+
+  try {
+    const params = new URLSearchParams(window.location.search || '');
+    if (!hasUrlFilterState(params)) return null;
+
+    empty.continents = setFromArray(params.getAll('continent'));
+    empty.countries = setFromArray(params.getAll('country'));
+    empty.periods = setFromArray(params.getAll('period'));
+    empty.types = setFromArray(params.getAll('type'));
+    empty.search = params.get('q') || '';
+    empty.favoritesOnly = ['1', 'true', 'yes'].includes(String(params.get('favorites') || '').toLowerCase());
+    return empty;
+  } catch {
+    return null;
+  }
+}
+
 function loadFilters() {
+  const fromUrl = loadFiltersFromUrl();
+  if (fromUrl) return fromUrl;
+
   try {
     const raw = localStorage.getItem(FILTERS_STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : {};
@@ -1243,14 +1280,27 @@ function loadFilters() {
       favoritesOnly: Boolean(parsed.favoritesOnly),
     };
   } catch {
-    return {
-      continents: new Set(),
-      countries: new Set(),
-      periods: new Set(),
-      types: new Set(),
-      search: '',
-      favoritesOnly: false,
-    };
+    return createEmptyFilters();
+  }
+}
+
+function syncFiltersToUrl() {
+  try {
+    const params = new URLSearchParams();
+
+    [...uiState.filters.continents].sort().forEach(value => params.append('continent', value));
+    [...uiState.filters.countries].sort().forEach(value => params.append('country', value));
+    [...uiState.filters.periods].sort().forEach(value => params.append('period', value));
+    [...uiState.filters.types].sort().forEach(value => params.append('type', value));
+
+    if (uiState.filters.search.trim()) params.set('q', uiState.filters.search.trim());
+    if (uiState.filters.favoritesOnly) params.set('favorites', '1');
+
+    const query = params.toString();
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash || ''}`;
+    window.history.replaceState({}, '', nextUrl);
+  } catch {
+    // Ignore URL rewriting failures in restricted contexts.
   }
 }
 
@@ -1267,6 +1317,8 @@ function saveFilters() {
   } catch {
     // Ignore storage failures in file:// contexts or private sessions.
   }
+
+  syncFiltersToUrl();
 }
 
 function loadFavorites() {

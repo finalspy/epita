@@ -214,7 +214,7 @@
   .filters {
     padding: .75rem 1.25rem;
     display: grid;
-    grid-template-columns: minmax(220px, 320px) repeat(4, minmax(130px, 1fr)) minmax(170px, 220px) auto;
+    grid-template-columns: minmax(220px, 320px) repeat(5, minmax(120px, 1fr)) minmax(170px, 220px) auto;
     gap: .65rem;
     align-items: end;
     border-bottom: 1px solid var(--border);
@@ -991,6 +991,14 @@
           </div>
         </details>
       </div>
+      <div class="filter-group">
+        <label for="fSort">Tri</label>
+        <select class="control-input" id="fSort">
+          <option value="country-asc">Pays A-Z</option>
+          <option value="university-asc">Universités A-Z</option>
+          <option value="availability-desc">Plus d'options</option>
+        </select>
+      </div>
       <div class="filter-group filter-group--favorites">
         <label>Favoris</label>
         <label class="favorite-toggle">
@@ -1257,11 +1265,12 @@ function createEmptyFilters() {
     types: new Set(),
     search: '',
     favoritesOnly: false,
+    sort: 'country-asc',
   };
 }
 
 function hasUrlFilterState(params) {
-  return ['continent', 'country', 'period', 'type', 'q', 'favorites'].some(key => params.has(key));
+  return ['continent', 'country', 'period', 'type', 'q', 'favorites', 'sort'].some(key => params.has(key));
 }
 
 function loadFiltersFromUrl() {
@@ -1277,6 +1286,7 @@ function loadFiltersFromUrl() {
     empty.types = setFromArray(params.getAll('type'));
     empty.search = params.get('q') || '';
     empty.favoritesOnly = ['1', 'true', 'yes'].includes(String(params.get('favorites') || '').toLowerCase());
+    empty.sort = params.get('sort') || 'country-asc';
     return empty;
   } catch {
     return null;
@@ -1297,6 +1307,7 @@ function loadFilters() {
       types: setFromArray(parsed.types),
       search: typeof parsed.search === 'string' ? parsed.search : '',
       favoritesOnly: Boolean(parsed.favoritesOnly),
+      sort: typeof parsed.sort === 'string' ? parsed.sort : 'country-asc',
     };
   } catch {
     return createEmptyFilters();
@@ -1314,6 +1325,7 @@ function syncFiltersToUrl() {
 
     if (uiState.filters.search.trim()) params.set('q', uiState.filters.search.trim());
     if (uiState.filters.favoritesOnly) params.set('favorites', '1');
+    if (uiState.filters.sort && uiState.filters.sort !== 'country-asc') params.set('sort', uiState.filters.sort);
 
     const query = params.toString();
     const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash || ''}`;
@@ -1332,6 +1344,7 @@ function saveFilters() {
       types: [...uiState.filters.types],
       search: uiState.filters.search,
       favoritesOnly: uiState.filters.favoritesOnly,
+      sort: uiState.filters.sort,
     }));
   } catch {
     // Ignore storage failures in file:// contexts or private sessions.
@@ -1536,6 +1549,7 @@ function renderFilterControls() {
   renderFilterMenu('types');
   document.getElementById('fSearch').value = uiState.filters.search;
   document.getElementById('fFavorites').checked = uiState.filters.favoritesOnly;
+  document.getElementById('fSort').value = uiState.filters.sort;
   renderActiveFilters();
   saveFilters();
 }
@@ -1669,9 +1683,62 @@ function resetFilters() {
   uiState.filters.types.clear();
   uiState.filters.search = '';
   uiState.filters.favoritesOnly = false;
+  uiState.filters.sort = 'country-asc';
   renderFilterControls();
   render();
   closeFilterMenus();
+}
+
+function compareText(a, b) {
+  return String(a).localeCompare(String(b), 'fr');
+}
+
+function getAvailabilityScore(item, periods) {
+  return periods.reduce((score, period) => {
+    const status = item[period];
+    const classification = classify(status);
+    return status && classification && classification !== 'ferme' ? score + 1 : score;
+  }, 0);
+}
+
+function sortCountries(countries, groupedByCountry, visiblePeriods) {
+  const sortMode = uiState.filters.sort;
+  const nextCountries = countries.slice();
+
+  nextCountries.sort((left, right) => {
+    if (sortMode === 'availability-desc') {
+      const leftScore = groupedByCountry[left].reduce((sum, item) => sum + getAvailabilityScore(item, visiblePeriods), 0);
+      const rightScore = groupedByCountry[right].reduce((sum, item) => sum + getAvailabilityScore(item, visiblePeriods), 0);
+      if (rightScore !== leftScore) return rightScore - leftScore;
+    }
+
+    if (sortMode === 'university-asc') {
+      const leftName = groupedByCountry[left].map(item => item.u).sort(compareText)[0] || left;
+      const rightName = groupedByCountry[right].map(item => item.u).sort(compareText)[0] || right;
+      const universityCompare = compareText(leftName, rightName);
+      if (universityCompare !== 0) return universityCompare;
+    }
+
+    return compareText(left, right);
+  });
+
+  return nextCountries;
+}
+
+function sortUniversities(universities, visiblePeriods) {
+  const sortMode = uiState.filters.sort;
+  const nextUniversities = universities.slice();
+
+  nextUniversities.sort((left, right) => {
+    if (sortMode === 'availability-desc') {
+      const scoreDiff = getAvailabilityScore(right, visiblePeriods) - getAvailabilityScore(left, visiblePeriods);
+      if (scoreDiff !== 0) return scoreDiff;
+    }
+
+    return compareText(left.u, right.u);
+  });
+
+  return nextUniversities;
 }
 
 function render() {
@@ -1701,7 +1768,7 @@ function render() {
   CONTINENT_ORDER.forEach(continent => {
     if (!grouped[continent]) return;
 
-    const countries = Object.keys(grouped[continent]).sort((a, b) => a.localeCompare(b, 'fr'));
+    const countries = sortCountries(Object.keys(grouped[continent]), grouped[continent], visiblePeriods);
     const total = countries.reduce((sum, country) => sum + grouped[continent][country].length, 0);
     const continentOpen = isSectionOpen(uiState.continentOpen, continent);
 
@@ -1714,7 +1781,7 @@ function render() {
 
     countries.forEach(country => {
       const countryKey = `${continent}__${country}`;
-      const universities = grouped[continent][country];
+      const universities = sortUniversities(grouped[continent][country], visiblePeriods);
       const countryOpen = isSectionOpen(uiState.countryOpen, countryKey);
       const pctPeriod = Math.floor(60 / visiblePeriods.length);
 
@@ -1802,6 +1869,12 @@ document.getElementById('filters').addEventListener('click', event => {
 
 document.getElementById('fSearch').addEventListener('input', event => {
   uiState.filters.search = event.target.value;
+  saveFilters();
+  render();
+});
+
+document.getElementById('fSort').addEventListener('change', event => {
+  uiState.filters.sort = event.target.value;
   saveFilters();
   render();
 });

@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Destinations Internationales</title>
+<script>
+  try {
+    var savedTheme = localStorage.getItem('destinations-theme-v1');
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+  } catch (error) {}
+</script>
 <style>
   :root {
     --bg: #0f1117;
@@ -20,8 +28,45 @@
     --erasmus: #38bdf8;
     --dd: #f472b6;
     --summer: #facc15;
+    --favorite-on: #facc15;
+    --favorite-off: #6b7280;
     --radius: 8px;
     --font: 'Segoe UI', system-ui, sans-serif;
+    --sticky-offset: 0px;
+    --toolbar-bg: rgba(26, 29, 39, .94);
+    --panel-shadow: 0 18px 40px rgba(0,0,0,.35);
+    --soft-border: rgba(46, 51, 71, .75);
+    --hover-soft: rgba(255,255,255,.04);
+    --hover-subtle: rgba(255,255,255,.03);
+    --switch-knob: #f8fafc;
+    --switch-accent-bg: rgba(250, 204, 21, .18);
+    --section-bg: rgba(26, 29, 39, .65);
+    --country-border: rgba(46, 51, 71, .65);
+    --country-bg: rgba(15, 17, 23, .28);
+    --accent-border: rgba(167,139,250,.22);
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f4f7fc;
+    --surface: #ffffff;
+    --surface2: #eef3fb;
+    --border: #d8e1ef;
+    --text: #172033;
+    --text-dim: #67748e;
+    --accent: #2e5bff;
+    --accent2: #7c4dff;
+    --favorite-off: #94a3b8;
+    --toolbar-bg: rgba(255, 255, 255, .94);
+    --panel-shadow: 0 16px 36px rgba(23, 32, 51, .12);
+    --soft-border: rgba(135, 148, 177, .35);
+    --hover-soft: rgba(46, 91, 255, .07);
+    --hover-subtle: rgba(46, 91, 255, .05);
+    --switch-knob: #ffffff;
+    --switch-accent-bg: rgba(250, 204, 21, .24);
+    --section-bg: rgba(255, 255, 255, .92);
+    --country-border: rgba(135, 148, 177, .35);
+    --country-bg: rgba(244, 247, 252, .95);
+    --accent-border: rgba(124, 77, 255, .16);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -32,16 +77,17 @@
     color: var(--text);
     min-height: 100vh;
     line-height: 1.5;
+    transition: background-color .2s ease, color .2s ease;
   }
 
   header {
-    padding: 2rem 2rem 1rem;
+    padding: 1.2rem 1.25rem .75rem;
     border-bottom: 1px solid var(--border);
     background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
   }
 
   header h1 {
-    font-size: 1.6rem;
+    font-size: 1.35rem;
     font-weight: 700;
     letter-spacing: -0.03em;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -49,12 +95,128 @@
     -webkit-text-fill-color: transparent;
   }
 
-  .filters {
-    padding: 1rem 2rem;
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 120;
+    border-bottom: 1px solid var(--border);
+    background: var(--toolbar-bg);
+    backdrop-filter: blur(14px);
+    overflow: visible;
+  }
+
+  .toolbar-bar {
+    padding: .55rem 1.25rem;
     display: flex;
-    flex-wrap: wrap;
-    gap: .75rem;
     align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+  }
+
+  .toolbar-title {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-dim);
+    font-weight: 700;
+  }
+
+  .toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .toolbar-btn {
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    border-radius: 999px;
+    padding: .35rem .78rem;
+    font: inherit;
+    font-size: .75rem;
+    font-weight: 600;
+  }
+
+  .toolbar-btn:hover {
+    border-color: var(--accent);
+  }
+
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    color: var(--text-dim);
+    font-size: .74rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+    cursor: pointer;
+  }
+
+  .theme-toggle input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .theme-switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    flex-shrink: 0;
+    transition: background .18s ease, border-color .18s ease;
+  }
+
+  .theme-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--switch-knob);
+    transition: transform .18s ease;
+  }
+
+  .theme-toggle input:checked + .theme-switch {
+    border-color: var(--accent);
+    background: rgba(46, 91, 255, .18);
+  }
+
+  .theme-toggle input:checked + .theme-switch::after {
+    transform: translateX(18px);
+  }
+
+  .theme-toggle-label {
+    color: var(--text);
+  }
+
+  .toolbar-panel {
+    overflow: visible;
+    max-height: 1200px;
+    transition: max-height .25s ease, opacity .2s ease;
+    opacity: 1;
+  }
+
+  .toolbar.collapsed .toolbar-panel {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  .filters {
+    padding: .75rem 1.25rem;
+    display: grid;
+    grid-template-columns: minmax(200px, 1.5fr) repeat(4, minmax(140px, 1fr)) auto;
+    gap: .65rem;
+    align-items: start;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
   }
@@ -62,7 +224,12 @@
   .filter-group {
     display: flex;
     flex-direction: column;
-    gap: .25rem;
+    gap: .4rem;
+    min-width: 0;
+  }
+
+  .filter-group--search {
+    grid-column: span 2;
   }
 
   .filter-group label {
@@ -73,26 +240,185 @@
     font-weight: 600;
   }
 
-  select {
+  .control-input,
+  .filter-menu-summary {
     background: var(--surface2);
     color: var(--text);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: .45rem .8rem;
-    font-size: .85rem;
+    padding: .58rem .72rem;
+    font-size: .8rem;
     font-family: var(--font);
-    cursor: pointer;
-    min-width: 160px;
-    appearance: auto;
+    min-height: 38px;
   }
 
-  select:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+  .control-input {
+    width: 100%;
+  }
+
+  .control-input::placeholder {
+    color: var(--text-dim);
+  }
+
+  .control-input:focus,
+  .filter-menu-summary:focus {
+    outline: 1px solid var(--accent);
+    border-color: var(--accent);
+  }
+
+  .filter-menu {
+    position: relative;
+  }
+
+  .filter-menu[open] {
+    z-index: 160;
+  }
+
+  .filter-menu-summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    user-select: none;
+  }
+
+  .filter-menu-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .filter-menu-summary::after {
+    content: '▾';
+    color: var(--text-dim);
+    font-size: .78rem;
+    transition: transform .18s ease;
+  }
+
+  .filter-menu[open] .filter-menu-summary::after {
+    transform: rotate(180deg);
+  }
+
+  .filter-menu-panel {
+    position: absolute;
+    top: calc(100% + .35rem);
+    left: 0;
+    z-index: 170;
+    width: min(320px, max(100%, 220px));
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .55rem;
+    box-shadow: var(--panel-shadow);
+  }
+
+  .filter-menu-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+    padding-bottom: .5rem;
+    margin-bottom: .45rem;
+    border-bottom: 1px solid var(--soft-border);
+  }
+
+  .filter-mini-btn {
+    cursor: pointer;
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-size: .75rem;
+    font-weight: 600;
+  }
+
+  .filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    max-height: 240px;
+    overflow: auto;
+  }
+
+  .filter-option {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .45rem .5rem;
+    border-radius: 10px;
+    color: var(--text);
+  }
+
+  .filter-option:hover {
+    background: var(--hover-soft);
+  }
+
+  .filter-option input {
+    accent-color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .favorite-toggle {
+    position: relative;
+    cursor: pointer;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .1rem 0;
+    color: var(--text);
+  }
+
+  .favorite-toggle input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .favorite-switch {
+    position: relative;
+    width: 48px;
+    height: 28px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    transition: background .18s ease, border-color .18s ease;
+    flex-shrink: 0;
+  }
+
+  .favorite-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--switch-knob);
+    transition: transform .18s ease;
+  }
+
+  .favorite-toggle input:checked + .favorite-switch {
+    background: var(--switch-accent-bg);
+    border-color: var(--favorite-on);
+  }
+
+  .favorite-toggle input:checked + .favorite-switch::after {
+    transform: translateX(20px);
+  }
+
+  .favorite-label {
+    color: var(--text);
+    font-size: .8rem;
+  }
 
   .stats {
-    margin-left: auto;
     display: flex;
-    gap: 1.5rem;
+    justify-content: flex-end;
+    gap: .9rem;
     align-items: center;
+    min-height: 38px;
+    padding-top: .95rem;
+    margin-left: 0;
   }
 
   .stat {
@@ -100,7 +426,7 @@
   }
 
   .stat-val {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--accent);
   }
@@ -113,11 +439,11 @@
   }
 
   .legend {
-    padding: .75rem 2rem;
+    padding: .5rem 1.25rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
-    font-size: .75rem;
+    gap: .8rem;
+    font-size: .7rem;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
   }
@@ -136,24 +462,65 @@
     display: inline-block;
   }
 
+  .legend-star {
+    font-size: .95rem;
+    line-height: 1;
+    color: var(--favorite-on);
+  }
+
   main {
-    padding: 1.5rem 2rem;
+    padding: .9rem 1.25rem 1.25rem;
   }
 
   .continent-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--section-bg);
+    overflow: hidden;
   }
 
   .continent-header {
-    font-size: 1.1rem;
+    cursor: pointer;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--accent2);
-    padding: .5rem 0;
-    border-bottom: 2px solid var(--accent2);
-    margin-bottom: 1rem;
+    padding: .78rem .95rem;
+    border-bottom: 1px solid var(--accent-border);
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
+    user-select: none;
+  }
+
+  .continent-header:hover,
+  .country-toggle:hover {
+    background: var(--hover-subtle);
+  }
+
+  .continent-title {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+  }
+
+  .continent-chevron {
+    font-size: .9rem;
+    transition: transform .2s ease;
+  }
+
+  .continent-section.is-collapsed .continent-chevron,
+  .country-section.is-collapsed .country-chevron {
+    transform: rotate(0deg);
+  }
+
+  .continent-section:not(.is-collapsed) .continent-chevron,
+  .country-section:not(.is-collapsed) .country-chevron {
+    transform: rotate(90deg);
   }
 
   .continent-count {
@@ -162,8 +529,49 @@
     font-weight: 400;
   }
 
+  .continent-body {
+    padding: .75rem .95rem .95rem;
+  }
+
+  .continent-body.is-collapsed,
+  .country-body.is-collapsed {
+    display: none;
+  }
+
   .country-section {
-    margin-bottom: 1.25rem;
+    margin-bottom: .75rem;
+    border: 1px solid var(--country-border);
+    border-radius: 12px;
+    background: var(--country-bg);
+    overflow: hidden;
+  }
+
+  .country-toggle {
+    cursor: pointer;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    padding: .62rem .8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+  }
+
+  .country-title {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    min-width: 0;
+  }
+
+  .country-chevron {
+    font-size: .8rem;
+    color: var(--text-dim);
+    transition: transform .2s ease;
   }
 
   .country-name {
@@ -172,9 +580,17 @@
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: .06em;
-    margin-bottom: .5rem;
-    padding-left: .5rem;
-    border-left: 3px solid var(--border);
+    min-width: 0;
+  }
+
+  .country-count {
+    flex-shrink: 0;
+    font-size: .72rem;
+    color: var(--text-dim);
+  }
+
+  .country-body {
+    padding: 0 .8rem .8rem;
   }
 
   .table-wrap {
@@ -184,7 +600,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: .8rem;
+    font-size: .76rem;
     table-layout: fixed;
   }
 
@@ -193,23 +609,21 @@
 
   thead th {
     background: var(--surface2);
-    padding: .5rem .6rem;
+    padding: .42rem .52rem;
     text-align: left;
     font-weight: 600;
-    font-size: .7rem;
+    font-size: .62rem;
     text-transform: uppercase;
     letter-spacing: .05em;
     color: var(--text-dim);
     border-bottom: 2px solid var(--border);
-    position: sticky;
-    top: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   tbody td {
-    padding: .45rem .6rem;
+    padding: .38rem .52rem;
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
     overflow: hidden;
@@ -218,6 +632,10 @@
 
   tbody tr:hover { background: var(--surface2); }
 
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
   .uni-name {
     font-weight: 500;
     white-space: nowrap;
@@ -225,11 +643,33 @@
     text-overflow: ellipsis;
   }
 
+  .uni-cell {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    min-width: 0;
+  }
+
+  .favorite-btn {
+    cursor: pointer;
+    border: 0;
+    background: transparent;
+    color: var(--favorite-off);
+    font-size: .92rem;
+    line-height: 1;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .favorite-btn.is-favorite {
+    color: var(--favorite-on);
+  }
+
   .cell-badge {
     display: inline-block;
-    padding: .15rem .55rem;
+    padding: .12rem .48rem;
     border-radius: 99px;
-    font-size: .7rem;
+    font-size: .62rem;
     font-weight: 600;
     white-space: nowrap;
   }
@@ -252,10 +692,64 @@
   }
 
   @media (max-width: 768px) {
-    header, .filters, .legend, main { padding-left: 1rem; padding-right: 1rem; }
-    .filters { flex-direction: column; align-items: stretch; }
-    .stats { margin-left: 0; justify-content: flex-start; }
-    select { min-width: 100%; }
+    header, .filters, .legend, main, .toolbar-bar { padding-left: 1rem; padding-right: 1rem; }
+    header {
+      padding-top: 1rem;
+      padding-bottom: .65rem;
+    }
+    header h1 {
+      font-size: 1.1rem;
+      line-height: 1.25;
+    }
+    .toolbar-bar {
+      flex-direction: column;
+      align-items: stretch;
+      gap: .45rem;
+    }
+    .toolbar-actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+    .filters {
+      grid-template-columns: 1fr;
+      gap: .55rem;
+    }
+    .filter-group--search {
+      grid-column: span 1;
+    }
+    .filter-menu {
+      width: 100%;
+    }
+    .filter-menu-panel {
+      position: static;
+      width: 100%;
+      margin-top: .35rem;
+      box-shadow: none;
+    }
+    .theme-toggle {
+      order: -1;
+    }
+    .stats {
+      justify-content: flex-start;
+      padding-top: 0;
+      gap: .8rem;
+    }
+    .stat-val {
+      font-size: 1.05rem;
+    }
+    .legend {
+      gap: .55rem;
+    }
+    .continent-header,
+    .country-toggle {
+      padding-left: .72rem;
+      padding-right: .72rem;
+    }
+    .continent-body,
+    .country-body {
+      padding-left: .72rem;
+      padding-right: .72rem;
+    }
   }
 </style>
 </head>
@@ -265,49 +759,101 @@
   <h1>🌍 Destinations Internationales — Programmes d'échange</h1>
 </header>
 
-<div class="filters" id="filters">
-  <div class="filter-group">
-    <label>Continent</label>
-    <select id="fContinent"><option value="">Tous</option></select>
+<div class="toolbar" id="toolbar">
+  <div class="toolbar-bar">
+    <div class="toolbar-title">Filtres et légende</div>
+    <div class="toolbar-actions">
+      <label class="theme-toggle">
+        <input id="themeToggle" type="checkbox">
+        <span class="theme-switch" aria-hidden="true"></span>
+        <span class="theme-toggle-label" id="themeLabel">Sombre</span>
+      </label>
+      <button class="toolbar-btn" id="resetFilters" type="button">Reset</button>
+      <button class="toolbar-btn" id="toolbarToggle" type="button" aria-expanded="true" aria-controls="toolbarPanel">Masquer</button>
+    </div>
   </div>
-  <div class="filter-group">
-    <label>Pays</label>
-    <select id="fCountry"><option value="">Tous</option></select>
-  </div>
-  <div class="filter-group">
-    <label>Période</label>
-    <select id="fPeriod">
-      <option value="">Toutes</option>
-      <option value="s4">S4</option>
-      <option value="s9">S9</option>
-      <option value="bachelor">Bachelor Cyber</option>
-      <option value="dd">Double diplôme</option>
-      <option value="summer">Summer program</option>
-    </select>
-  </div>
-  <div class="filter-group">
-    <label>Type</label>
-    <select id="fType">
-      <option value="">Tous</option>
-      <option value="echange">Échange</option>
-      <option value="erasmus">Erasmus</option>
-      <option value="payant">Payant</option>
-      <option value="ferme">Fermé</option>
-    </select>
-  </div>
-  <div class="stats">
-    <div class="stat"><div class="stat-val" id="statUni">0</div><div class="stat-label">Universités</div></div>
-    <div class="stat"><div class="stat-val" id="statCountry">0</div><div class="stat-label">Pays</div></div>
-  </div>
-</div>
+  <div class="toolbar-panel" id="toolbarPanel">
+    <div class="filters" id="filters">
+      <div class="filter-group filter-group--search">
+        <label for="fSearch">Recherche</label>
+        <input class="control-input" id="fSearch" type="search" placeholder="Université, pays, continent, statut...">
+      </div>
+      <div class="filter-group">
+        <label>Continent</label>
+        <details class="filter-menu" id="menuContinent">
+          <summary class="filter-menu-summary" id="labelContinent">Tous</summary>
+          <div class="filter-menu-panel">
+            <div class="filter-menu-actions">
+              <button class="filter-mini-btn" type="button" data-action="select-all-filter" data-filter="continents">Tout</button>
+              <button class="filter-mini-btn" type="button" data-action="clear-filter" data-filter="continents">Effacer</button>
+            </div>
+            <div class="filter-options" id="optionsContinent"></div>
+          </div>
+        </details>
+      </div>
+      <div class="filter-group">
+        <label>Pays</label>
+        <details class="filter-menu" id="menuCountry">
+          <summary class="filter-menu-summary" id="labelCountry">Tous</summary>
+          <div class="filter-menu-panel">
+            <div class="filter-menu-actions">
+              <button class="filter-mini-btn" type="button" data-action="select-all-filter" data-filter="countries">Tout</button>
+              <button class="filter-mini-btn" type="button" data-action="clear-filter" data-filter="countries">Effacer</button>
+            </div>
+            <div class="filter-options" id="optionsCountry"></div>
+          </div>
+        </details>
+      </div>
+      <div class="filter-group">
+        <label>Période</label>
+        <details class="filter-menu" id="menuPeriod">
+          <summary class="filter-menu-summary" id="labelPeriod">Toutes</summary>
+          <div class="filter-menu-panel">
+            <div class="filter-menu-actions">
+              <button class="filter-mini-btn" type="button" data-action="select-all-filter" data-filter="periods">Tout</button>
+              <button class="filter-mini-btn" type="button" data-action="clear-filter" data-filter="periods">Effacer</button>
+            </div>
+            <div class="filter-options" id="optionsPeriod"></div>
+          </div>
+        </details>
+      </div>
+      <div class="filter-group">
+        <label>Type</label>
+        <details class="filter-menu" id="menuType">
+          <summary class="filter-menu-summary" id="labelType">Tous</summary>
+          <div class="filter-menu-panel">
+            <div class="filter-menu-actions">
+              <button class="filter-mini-btn" type="button" data-action="select-all-filter" data-filter="types">Tout</button>
+              <button class="filter-mini-btn" type="button" data-action="clear-filter" data-filter="types">Effacer</button>
+            </div>
+            <div class="filter-options" id="optionsType"></div>
+          </div>
+        </details>
+      </div>
+      <div class="filter-group">
+        <label>Favoris</label>
+        <label class="favorite-toggle">
+          <input id="fFavorites" type="checkbox">
+          <span class="favorite-switch" aria-hidden="true"></span>
+          <span class="favorite-label">Favoris uniquement</span>
+        </label>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="statUni">0</div><div class="stat-label">Universités</div></div>
+        <div class="stat"><div class="stat-val" id="statCountry">0</div><div class="stat-label">Pays</div></div>
+      </div>
+    </div>
 
-<div class="legend">
-  <div class="legend-item"><span class="legend-dot" style="background:var(--exchange)"></span> Échange</div>
-  <div class="legend-item"><span class="legend-dot" style="background:var(--erasmus)"></span> Erasmus</div>
-  <div class="legend-item"><span class="legend-dot" style="background:var(--paid)"></span> Payant</div>
-  <div class="legend-item"><span class="legend-dot" style="background:var(--closed)"></span> Fermé</div>
-  <div class="legend-item"><span class="legend-dot" style="background:var(--dd)"></span> Double diplôme</div>
-  <div class="legend-item"><span class="legend-dot" style="background:var(--summer)"></span> Summer</div>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--exchange)"></span> Échange</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--erasmus)"></span> Erasmus</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--paid)"></span> Payant</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--closed)"></span> Fermé</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--dd)"></span> Double diplôme</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--summer)"></span> Summer</div>
+      <div class="legend-item"><span class="legend-star">★</span> Favori</div>
+    </div>
+  </div>
 </div>
 
 <main id="main"></main>
@@ -443,8 +989,183 @@ const DATA = [
   {c:"OCÉANIE",p:"NOUVELLE-ZÉLANDE",u:"University of Auckland",s4:"payant",s9:"",bachelor:"payant",dd:"",summer:""},
 ];
 
-const PERIODS = ['s4','s9','bachelor','dd','summer'];
-const PERIOD_LABELS = {s4:'S4',s9:'S9',bachelor:'Bachelor Cyber',dd:'Double diplôme',summer:'Summer'};
+DATA.forEach((item, index) => {
+  item.id = String(index);
+});
+
+const CONTINENT_ORDER = ['AFRIQUE','AMÉRIQUES','ASIE','EUROPE','MOYEN-ORIENT','OCÉANIE'];
+const PERIOD_OPTIONS = [
+  { value: 's4', label: 'S4' },
+  { value: 's9', label: 'S9' },
+  { value: 'bachelor', label: 'Bachelor Cyber' },
+  { value: 'dd', label: 'Double diplôme' },
+  { value: 'summer', label: 'Summer' },
+];
+const TYPE_OPTIONS = [
+  { value: 'echange', label: 'Échange' },
+  { value: 'erasmus', label: 'Erasmus' },
+  { value: 'payant', label: 'Payant' },
+  { value: 'ferme', label: 'Fermé' },
+];
+const PERIOD_LABELS = PERIOD_OPTIONS.reduce((labels, option) => {
+  labels[option.value] = option.label;
+  return labels;
+}, {});
+const FILTERS_STORAGE_KEY = 'destinations-filters-v1';
+const FAVORITES_STORAGE_KEY = 'destinations-favorites-v1';
+const THEME_STORAGE_KEY = 'destinations-theme-v1';
+const FILTER_MENU_CONFIG = {
+  continents: { summaryId: 'labelContinent', optionsId: 'optionsContinent', emptyLabel: 'Tous', getOptions: () => CONTINENT_ORDER.filter(continent => DATA.some(item => item.c === continent)).map(continent => ({ value: continent, label: continent })) },
+  countries: { summaryId: 'labelCountry', optionsId: 'optionsCountry', emptyLabel: 'Tous', getOptions: () => getAvailableCountries().map(country => ({ value: country, label: country })) },
+  periods: { summaryId: 'labelPeriod', optionsId: 'optionsPeriod', emptyLabel: 'Toutes', getOptions: () => PERIOD_OPTIONS },
+  types: { summaryId: 'labelType', optionsId: 'optionsType', emptyLabel: 'Tous', getOptions: () => TYPE_OPTIONS },
+};
+const uiState = {
+  filters: loadFilters(),
+  continentOpen: {},
+  countryOpen: {},
+  favorites: loadFavorites(),
+  theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark',
+};
+
+DATA.forEach(item => {
+  item.searchIndex = buildSearchIndex(item);
+});
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function normalizeText(value) {
+  let text = value == null ? '' : String(value);
+  if (typeof text.normalize === 'function') {
+    text = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+  return text.toLowerCase();
+}
+
+function forEachNode(list, callback) {
+  Array.prototype.forEach.call(list, callback);
+}
+
+function matchesSelector(element, selector) {
+  if (!element || element.nodeType !== 1) return false;
+  const matcher =
+    element.matches ||
+    element.msMatchesSelector ||
+    element.webkitMatchesSelector ||
+    element.mozMatchesSelector;
+  return matcher ? matcher.call(element, selector) : false;
+}
+
+function closestSelector(element, selector) {
+  let current = element;
+  while (current && current !== document) {
+    if (matchesSelector(current, selector)) return current;
+    current = current.parentElement;
+  }
+  return null;
+}
+
+function buildSearchIndex(item) {
+  const parts = [item.c, item.p, item.u];
+  PERIOD_OPTIONS.forEach(option => {
+    if (!item[option.value]) return;
+    parts.push(option.label, item[option.value]);
+  });
+  return normalizeText(parts.join(' '));
+}
+
+function setFromArray(value) {
+  return new Set(Array.isArray(value) ? value.map(String) : []);
+}
+
+function loadFilters() {
+  try {
+    const raw = localStorage.getItem(FILTERS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return {
+      continents: setFromArray(parsed.continents),
+      countries: setFromArray(parsed.countries),
+      periods: setFromArray(parsed.periods),
+      types: setFromArray(parsed.types),
+      search: typeof parsed.search === 'string' ? parsed.search : '',
+      favoritesOnly: Boolean(parsed.favoritesOnly),
+    };
+  } catch {
+    return {
+      continents: new Set(),
+      countries: new Set(),
+      periods: new Set(),
+      types: new Set(),
+      search: '',
+      favoritesOnly: false,
+    };
+  }
+}
+
+function saveFilters() {
+  try {
+    localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify({
+      continents: [...uiState.filters.continents],
+      countries: [...uiState.filters.countries],
+      periods: [...uiState.filters.periods],
+      types: [...uiState.filters.types],
+      search: uiState.filters.search,
+      favoritesOnly: uiState.filters.favoritesOnly,
+    }));
+  } catch {
+    // Ignore storage failures in file:// contexts or private sessions.
+  }
+}
+
+function loadFavorites() {
+  try {
+    const raw = localStorage.getItem(FAVORITES_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveFavorites() {
+  try {
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify([...uiState.favorites]));
+  } catch {
+    // Ignore storage failures in file:// contexts or private sessions.
+  }
+}
+
+function applyTheme(theme) {
+  const resolvedTheme = theme === 'light' ? 'light' : 'dark';
+  uiState.theme = resolvedTheme;
+  document.documentElement.setAttribute('data-theme', resolvedTheme);
+  document.getElementById('themeToggle').checked = resolvedTheme === 'light';
+  document.getElementById('themeLabel').textContent = resolvedTheme === 'light' ? 'Clair' : 'Sombre';
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, resolvedTheme);
+  } catch {
+    // Ignore storage failures in file:// contexts or private sessions.
+  }
+}
+
+function isSectionOpen(store, key) {
+  return store[key] !== false;
+}
+
+function toggleSection(store, key) {
+  store[key] = !isSectionOpen(store, key);
+}
+
+function isFavorite(item) {
+  return uiState.favorites.has(String(item.id));
+}
 
 function classify(val) {
   if (!val) return null;
@@ -463,24 +1184,68 @@ function badge(val) {
   if (!val) return '<span class="empty-cell">—</span>';
   const cls = classify(val);
   const bcls = cls === 'echange' ? 'badge-echange' : cls === 'erasmus' ? 'badge-erasmus' : cls === 'payant' ? 'badge-payant' : cls === 'ferme' ? 'badge-ferme' : 'badge-mixed';
-  return `<span class="cell-badge ${bcls}">${val}</span>`;
+  return `<span class="cell-badge ${bcls}">${escapeHtml(val)}</span>`;
 }
 
-function populateFilters() {
-  const continents = [...new Set(DATA.map(d=>d.c))].sort();
-  const sel = document.getElementById('fContinent');
-  continents.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
-  updateCountryFilter();
+function getAvailableCountries() {
+  const source = uiState.filters.continents.size
+    ? DATA.filter(item => uiState.filters.continents.has(item.c))
+    : DATA;
+
+  return [...new Set(source.map(item => item.p))].sort((a, b) => a.localeCompare(b, 'fr'));
 }
 
-function updateCountryFilter() {
-  const fc = document.getElementById('fContinent').value;
-  const countries = [...new Set(DATA.filter(d=> !fc || d.c===fc).map(d=>d.p))].sort();
-  const sel = document.getElementById('fCountry');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">Tous</option>';
-  countries.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
-  if (countries.includes(cur)) sel.value = cur;
+function syncCountrySelection() {
+  const availableCountries = new Set(getAvailableCountries());
+  [...uiState.filters.countries].forEach(country => {
+    if (!availableCountries.has(country)) uiState.filters.countries.delete(country);
+  });
+}
+
+function summarizeSelection(filterKey, options) {
+  const selected = [...uiState.filters[filterKey]];
+  const config = FILTER_MENU_CONFIG[filterKey];
+  if (!selected.length) return config.emptyLabel;
+
+  const labelMap = new Map(options.map(option => [option.value, option.label]));
+  const labels = selected.map(value => labelMap.get(value) || value);
+  if (labels.length <= 2) return labels.join(', ');
+  return `${labels.length} sélectionnés`;
+}
+
+function renderFilterMenu(filterKey) {
+  const config = FILTER_MENU_CONFIG[filterKey];
+  const options = config.getOptions();
+  const selected = uiState.filters[filterKey];
+  const summary = document.getElementById(config.summaryId);
+  const container = document.getElementById(config.optionsId);
+
+  summary.textContent = summarizeSelection(filterKey, options);
+  container.innerHTML = options.length
+    ? options.map(option => `
+        <label class="filter-option">
+          <input type="checkbox" data-filter-option data-filter="${filterKey}" value="${escapeHtml(option.value)}"${selected.has(option.value) ? ' checked' : ''}>
+          <span>${escapeHtml(option.label)}</span>
+        </label>
+      `).join('')
+    : '<div class="filter-option"><span>Aucune option disponible</span></div>';
+}
+
+function renderFilterControls() {
+  syncCountrySelection();
+  renderFilterMenu('continents');
+  renderFilterMenu('countries');
+  renderFilterMenu('periods');
+  renderFilterMenu('types');
+  document.getElementById('fSearch').value = uiState.filters.search;
+  document.getElementById('fFavorites').checked = uiState.filters.favoritesOnly;
+  saveFilters();
+}
+
+function closeFilterMenus(exceptMenu = null) {
+  forEachNode(document.querySelectorAll('.filter-menu[open]'), menu => {
+    if (menu !== exceptMenu) menu.open = false;
+  });
 }
 
 function matchesType(val, type) {
@@ -494,85 +1259,238 @@ function matchesType(val, type) {
   return false;
 }
 
-function filter() {
-  const fc = document.getElementById('fContinent').value;
-  const fp = document.getElementById('fCountry').value;
-  const fperiod = document.getElementById('fPeriod').value;
-  const ftype = document.getElementById('fType').value;
+function matchesSelectedTypes(val) {
+  if (!uiState.filters.types.size) return true;
+  return [...uiState.filters.types].some(type => matchesType(val, type));
+}
 
-  return DATA.filter(d => {
-    if (fc && d.c !== fc) return false;
-    if (fp && d.p !== fp) return false;
-    if (fperiod || ftype) {
-      const periods = fperiod ? [fperiod] : PERIODS;
-      const hasMatch = periods.some(p => {
-        const val = d[p];
-        if (!val) return false;
-        if (ftype && !matchesType(val, ftype)) return false;
-        return true;
+function getVisiblePeriods() {
+  return uiState.filters.periods.size
+    ? PERIOD_OPTIONS.filter(option => uiState.filters.periods.has(option.value)).map(option => option.value)
+    : PERIOD_OPTIONS.map(option => option.value);
+}
+
+function filterData() {
+  const searchTerm = normalizeText(uiState.filters.search.trim());
+  const visiblePeriods = getVisiblePeriods();
+
+  return DATA.filter(item => {
+    if (uiState.filters.continents.size && !uiState.filters.continents.has(item.c)) return false;
+    if (uiState.filters.countries.size && !uiState.filters.countries.has(item.p)) return false;
+    if (uiState.filters.favoritesOnly && !isFavorite(item)) return false;
+    if (searchTerm && !item.searchIndex.includes(searchTerm)) return false;
+
+    if (uiState.filters.periods.size || uiState.filters.types.size) {
+      const hasMatch = visiblePeriods.some(period => {
+        const value = item[period];
+        if (!value) return false;
+        return matchesSelectedTypes(value);
       });
       if (!hasMatch) return false;
     }
+
     return true;
   });
 }
 
+function toggleToolbar(forceOpen) {
+  const toolbar = document.getElementById('toolbar');
+  const button = document.getElementById('toolbarToggle');
+  const isOpen = typeof forceOpen === 'boolean' ? forceOpen : toolbar.classList.contains('collapsed');
+  toolbar.classList.toggle('collapsed', !isOpen);
+  button.textContent = isOpen ? 'Masquer' : 'Afficher';
+  button.setAttribute('aria-expanded', String(isOpen));
+  if (!isOpen) closeFilterMenus();
+}
+
+function toggleFavorite(id) {
+  const key = String(id);
+  if (uiState.favorites.has(key)) uiState.favorites.delete(key);
+  else uiState.favorites.add(key);
+  saveFavorites();
+  render();
+}
+
+function resetFilters() {
+  uiState.filters.continents.clear();
+  uiState.filters.countries.clear();
+  uiState.filters.periods.clear();
+  uiState.filters.types.clear();
+  uiState.filters.search = '';
+  uiState.filters.favoritesOnly = false;
+  renderFilterControls();
+  render();
+  closeFilterMenus();
+}
+
 function render() {
-  const data = filter();
+  const data = filterData();
   const main = document.getElementById('main');
+  const visiblePeriods = getVisiblePeriods();
 
   document.getElementById('statUni').textContent = data.length;
-  document.getElementById('statCountry').textContent = new Set(data.map(d=>d.p)).size;
+  document.getElementById('statCountry').textContent = new Set(data.map(item => item.p)).size;
 
-  if (!data.length) { main.innerHTML = '<div class="no-results">Aucun résultat pour ces filtres.</div>'; return; }
+  if (!data.length) {
+    const message = uiState.filters.favoritesOnly
+      ? 'Aucun favori ne correspond à ces filtres.'
+      : 'Aucun résultat pour ces filtres.';
+    main.innerHTML = `<div class="no-results">${message}</div>`;
+    return;
+  }
 
   const grouped = {};
-  data.forEach(d => {
-    if (!grouped[d.c]) grouped[d.c] = {};
-    if (!grouped[d.c][d.p]) grouped[d.c][d.p] = [];
-    grouped[d.c][d.p].push(d);
+  data.forEach(item => {
+    if (!grouped[item.c]) grouped[item.c] = {};
+    if (!grouped[item.c][item.p]) grouped[item.c][item.p] = [];
+    grouped[item.c][item.p].push(item);
   });
-
-  const fperiod = document.getElementById('fPeriod').value;
-  const visiblePeriods = fperiod ? [fperiod] : PERIODS;
 
   let html = '';
-  const continentOrder = ['AFRIQUE','AMÉRIQUES','ASIE','EUROPE','MOYEN-ORIENT','OCÉANIE'];
-  continentOrder.forEach(cont => {
-    if (!grouped[cont]) return;
-    const countries = Object.keys(grouped[cont]).sort();
-    const total = countries.reduce((s,c) => s + grouped[cont][c].length, 0);
-    html += `<div class="continent-section">`;
-    html += `<div class="continent-header"><span>${cont}</span><span class="continent-count">${total} univ.</span></div>`;
+  CONTINENT_ORDER.forEach(continent => {
+    if (!grouped[continent]) return;
+
+    const countries = Object.keys(grouped[continent]).sort((a, b) => a.localeCompare(b, 'fr'));
+    const total = countries.reduce((sum, country) => sum + grouped[continent][country].length, 0);
+    const continentOpen = isSectionOpen(uiState.continentOpen, continent);
+
+    html += `<section class="continent-section${continentOpen ? '' : ' is-collapsed'}">`;
+    html += `<button type="button" class="continent-header" data-action="toggle-continent" data-continent="${escapeHtml(continent)}" aria-expanded="${String(continentOpen)}">`;
+    html += `<span class="continent-title"><span class="continent-chevron">▸</span><span>${escapeHtml(continent)}</span></span>`;
+    html += `<span class="continent-count">${total} univ.</span>`;
+    html += `</button>`;
+    html += `<div class="continent-body${continentOpen ? '' : ' is-collapsed'}">`;
+
     countries.forEach(country => {
-      const unis = grouped[cont][country];
-      html += `<div class="country-section">`;
-      html += `<div class="country-name">${country}</div>`;
+      const countryKey = `${continent}__${country}`;
+      const universities = grouped[continent][country];
+      const countryOpen = isSectionOpen(uiState.countryOpen, countryKey);
       const pctPeriod = Math.floor(60 / visiblePeriods.length);
+
+      html += `<section class="country-section${countryOpen ? '' : ' is-collapsed'}">`;
+      html += `<button type="button" class="country-toggle" data-action="toggle-country" data-country-key="${escapeHtml(countryKey)}" aria-expanded="${String(countryOpen)}">`;
+      html += `<span class="country-title"><span class="country-chevron">▸</span><span class="country-name">${escapeHtml(country)}</span></span>`;
+      html += `<span class="country-count">${universities.length} univ.</span>`;
+      html += `</button>`;
+      html += `<div class="country-body${countryOpen ? '' : ' is-collapsed'}">`;
       html += `<div class="table-wrap"><table><colgroup><col style="width:${100 - pctPeriod * visiblePeriods.length}%">`;
-      visiblePeriods.forEach(() => html += `<col style="width:${pctPeriod}%">`);
+      visiblePeriods.forEach(() => {
+        html += `<col style="width:${pctPeriod}%">`;
+      });
       html += `</colgroup><thead><tr><th>Université</th>`;
-      visiblePeriods.forEach(p => html += `<th>${PERIOD_LABELS[p]}</th>`);
+      visiblePeriods.forEach(period => {
+        html += `<th>${escapeHtml(PERIOD_LABELS[period])}</th>`;
+      });
       html += `</tr></thead><tbody>`;
-      unis.forEach(u => {
-        html += `<tr><td class="uni-name" title="${u.u}">${u.u}</td>`;
-        visiblePeriods.forEach(p => html += `<td>${badge(u[p])}</td>`);
+
+      universities.forEach(university => {
+        const favorite = isFavorite(university);
+        const favoriteLabel = favorite ? 'Retirer des favoris' : 'Ajouter aux favoris';
+        html += `<tr><td><div class="uni-cell">`;
+        html += `<button type="button" class="favorite-btn${favorite ? ' is-favorite' : ''}" data-action="toggle-favorite" data-favorite-id="${university.id}" aria-pressed="${String(favorite)}" title="${favoriteLabel}">★</button>`;
+        html += `<span class="uni-name" title="${escapeHtml(university.u)}">${escapeHtml(university.u)}</span>`;
+        html += `</div></td>`;
+        visiblePeriods.forEach(period => {
+          html += `<td>${badge(university[period])}</td>`;
+        });
         html += `</tr>`;
       });
-      html += `</tbody></table></div></div>`;
+
+      html += `</tbody></table></div></div></section>`;
     });
-    html += `</div>`;
+
+    html += `</div></section>`;
   });
+
   main.innerHTML = html;
 }
 
-document.getElementById('fContinent').addEventListener('change', () => { updateCountryFilter(); render(); });
-document.getElementById('fCountry').addEventListener('change', render);
-document.getElementById('fPeriod').addEventListener('change', render);
-document.getElementById('fType').addEventListener('change', render);
+forEachNode(document.querySelectorAll('.filter-menu'), menu => {
+  menu.addEventListener('toggle', () => {
+    if (menu.open) closeFilterMenus(menu);
+  });
+});
 
-populateFilters();
+document.getElementById('filters').addEventListener('change', event => {
+  if (matchesSelector(event.target, '[data-filter-option]')) {
+    const filterKey = event.target.dataset.filter;
+    const selectedValues = uiState.filters[filterKey];
+    if (event.target.checked) selectedValues.add(event.target.value);
+    else selectedValues.delete(event.target.value);
+    renderFilterControls();
+    render();
+    return;
+  }
+
+  if (event.target.id === 'fFavorites') {
+    uiState.filters.favoritesOnly = event.target.checked;
+    saveFilters();
+    render();
+  }
+});
+
+document.getElementById('filters').addEventListener('click', event => {
+  const actionTarget = closestSelector(event.target, '[data-action]');
+  if (!actionTarget) return;
+
+  const filterKey = actionTarget.dataset.filter;
+  if (actionTarget.dataset.action === 'select-all-filter') {
+    uiState.filters[filterKey].clear();
+    FILTER_MENU_CONFIG[filterKey].getOptions().forEach(option => uiState.filters[filterKey].add(option.value));
+    renderFilterControls();
+    render();
+    return;
+  }
+
+  if (actionTarget.dataset.action === 'clear-filter') {
+    uiState.filters[filterKey].clear();
+    renderFilterControls();
+    render();
+  }
+});
+
+document.getElementById('fSearch').addEventListener('input', event => {
+  uiState.filters.search = event.target.value;
+  saveFilters();
+  render();
+});
+
+document.getElementById('resetFilters').addEventListener('click', resetFilters);
+document.getElementById('themeToggle').addEventListener('change', event => {
+  applyTheme(event.target.checked ? 'light' : 'dark');
+});
+document.getElementById('toolbarToggle').addEventListener('click', () => toggleToolbar());
+document.addEventListener('click', event => {
+  if (!closestSelector(event.target, '.filter-menu')) closeFilterMenus();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeFilterMenus();
+});
+document.getElementById('main').addEventListener('click', event => {
+  const actionTarget = closestSelector(event.target, '[data-action]');
+  if (!actionTarget) return;
+
+  if (actionTarget.dataset.action === 'toggle-continent') {
+    toggleSection(uiState.continentOpen, actionTarget.dataset.continent);
+    render();
+    return;
+  }
+
+  if (actionTarget.dataset.action === 'toggle-country') {
+    toggleSection(uiState.countryOpen, actionTarget.dataset.countryKey);
+    render();
+    return;
+  }
+
+  if (actionTarget.dataset.action === 'toggle-favorite') {
+    toggleFavorite(actionTarget.dataset.favoriteId);
+  }
+});
+
+applyTheme(uiState.theme);
+renderFilterControls();
 render();
+toggleToolbar(true);
 </script>
 </body>
 </html>

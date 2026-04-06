@@ -1157,6 +1157,7 @@ const PERIOD_LABELS = PERIOD_OPTIONS.reduce((labels, option) => {
 }, {});
 const FILTERS_STORAGE_KEY = 'destinations-filters-v1';
 const FAVORITES_STORAGE_KEY = 'destinations-favorites-v1';
+const SECTION_STATE_STORAGE_KEY = 'destinations-sections-v1';
 const THEME_STORAGE_KEY = 'destinations-theme-v1';
 const FILTER_MENU_CONFIG = {
   continents: { summaryId: 'labelContinent', optionsId: 'optionsContinent', emptyLabel: 'Tous', getOptions: () => CONTINENT_ORDER.filter(continent => DATA.some(item => item.c === continent)).map(continent => ({ value: continent, label: continent })) },
@@ -1166,8 +1167,8 @@ const FILTER_MENU_CONFIG = {
 };
 const uiState = {
   filters: loadFilters(),
-  continentOpen: {},
-  countryOpen: {},
+  continentOpen: loadSectionState('continents'),
+  countryOpen: loadSectionState('countries'),
   favorites: loadFavorites(),
   theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark',
 };
@@ -1286,6 +1287,32 @@ function saveFavorites() {
   }
 }
 
+function loadSectionState(key) {
+  try {
+    const raw = localStorage.getItem(SECTION_STATE_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    const sectionState = parsed && typeof parsed[key] === 'object' ? parsed[key] : {};
+    const normalized = {};
+    Object.keys(sectionState).forEach(sectionKey => {
+      normalized[sectionKey] = sectionState[sectionKey] !== false ? true : false;
+    });
+    return normalized;
+  } catch {
+    return {};
+  }
+}
+
+function saveSectionStates() {
+  try {
+    localStorage.setItem(SECTION_STATE_STORAGE_KEY, JSON.stringify({
+      continents: uiState.continentOpen,
+      countries: uiState.countryOpen,
+    }));
+  } catch {
+    // Ignore storage failures in file:// contexts or private sessions.
+  }
+}
+
 function applyTheme(theme) {
   const resolvedTheme = theme === 'light' ? 'light' : 'dark';
   uiState.theme = resolvedTheme;
@@ -1305,6 +1332,7 @@ function isSectionOpen(store, key) {
 
 function toggleSection(store, key) {
   store[key] = !isSectionOpen(store, key);
+  saveSectionStates();
 }
 
 function isFavorite(item) {

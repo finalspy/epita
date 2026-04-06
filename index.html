@@ -362,6 +362,25 @@
     flex-shrink: 0;
   }
 
+  .filter-option-text {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .filter-option-label {
+    min-width: 0;
+  }
+
+  .filter-option-count {
+    color: var(--text-dim);
+    font-size: .72rem;
+    flex-shrink: 0;
+  }
+
   .favorite-toggle {
     position: relative;
     cursor: pointer;
@@ -1500,7 +1519,10 @@ function renderFilterMenu(filterKey) {
     ? options.map(option => `
         <label class="filter-option">
           <input type="checkbox" data-filter-option data-filter="${filterKey}" value="${escapeHtml(option.value)}"${selected.has(option.value) ? ' checked' : ''}>
-          <span>${escapeHtml(option.label)}</span>
+          <span class="filter-option-text">
+            <span class="filter-option-label">${escapeHtml(option.label)}</span>
+            <span class="filter-option-count">${getFilterOptionCount(filterKey, option.value)}</span>
+          </span>
         </label>
       `).join('')
     : '<div class="filter-option"><span>Aucune option disponible</span></div>';
@@ -1546,27 +1568,80 @@ function getVisiblePeriods() {
     : PERIOD_OPTIONS.map(option => option.value);
 }
 
-function filterData() {
+function matchesBaseFilters(item, ignoredFilterKey = '') {
   const searchTerm = normalizeText(uiState.filters.search.trim());
-  const visiblePeriods = getVisiblePeriods();
 
-  return DATA.filter(item => {
-    if (uiState.filters.continents.size && !uiState.filters.continents.has(item.c)) return false;
-    if (uiState.filters.countries.size && !uiState.filters.countries.has(item.p)) return false;
-    if (uiState.filters.favoritesOnly && !isFavorite(item)) return false;
-    if (searchTerm && !item.searchIndex.includes(searchTerm)) return false;
+  if (ignoredFilterKey !== 'continents' && uiState.filters.continents.size && !uiState.filters.continents.has(item.c)) return false;
+  if (ignoredFilterKey !== 'countries' && uiState.filters.countries.size && !uiState.filters.countries.has(item.p)) return false;
+  if (ignoredFilterKey !== 'favorites' && uiState.filters.favoritesOnly && !isFavorite(item)) return false;
+  if (ignoredFilterKey !== 'search' && searchTerm && !item.searchIndex.includes(searchTerm)) return false;
+  return true;
+}
 
-    if (uiState.filters.periods.size || uiState.filters.types.size) {
-      const hasMatch = visiblePeriods.some(period => {
-        const value = item[period];
-        if (!value) return false;
-        return matchesSelectedTypes(value);
-      });
-      if (!hasMatch) return false;
-    }
+function matchesPeriodAndTypeFilters(item, periods, types) {
+  if (!periods.length && !types.length) return true;
 
-    return true;
+  const periodsToCheck = periods.length
+    ? periods
+    : PERIOD_OPTIONS.map(option => option.value);
+
+  return periodsToCheck.some(period => {
+    const value = item[period];
+    if (!value) return false;
+    if (!types.length) return true;
+    return types.some(type => matchesType(value, type));
   });
+}
+
+function filterData() {
+  const selectedPeriods = [...uiState.filters.periods];
+  const selectedTypes = [...uiState.filters.types];
+
+  return DATA.filter(item =>
+    matchesBaseFilters(item) &&
+    matchesPeriodAndTypeFilters(item, selectedPeriods, selectedTypes)
+  );
+}
+
+function getFilterOptionCount(filterKey, optionValue) {
+  if (filterKey === 'continents') {
+    return DATA.filter(item =>
+      item.c === optionValue &&
+      matchesBaseFilters(item, 'continents') &&
+      matchesPeriodAndTypeFilters(item, [...uiState.filters.periods], [...uiState.filters.types])
+    ).length;
+  }
+
+  if (filterKey === 'countries') {
+    return DATA.filter(item =>
+      item.p === optionValue &&
+      matchesBaseFilters(item, 'countries') &&
+      matchesPeriodAndTypeFilters(item, [...uiState.filters.periods], [...uiState.filters.types])
+    ).length;
+  }
+
+  if (filterKey === 'periods') {
+    return DATA.filter(item => {
+      if (!matchesBaseFilters(item)) return false;
+      const value = item[optionValue];
+      if (!value) return false;
+      if (!uiState.filters.types.size) return true;
+      return [...uiState.filters.types].some(type => matchesType(value, type));
+    }).length;
+  }
+
+  if (filterKey === 'types') {
+    const periodsToCheck = uiState.filters.periods.size
+      ? [...uiState.filters.periods]
+      : PERIOD_OPTIONS.map(option => option.value);
+
+    return DATA.filter(item =>
+      matchesBaseFilters(item) &&
+      periodsToCheck.some(period => matchesType(item[period], optionValue))
+    ).length;
+  }
+
+  return 0;
 }
 
 function toggleToolbar(forceOpen) {

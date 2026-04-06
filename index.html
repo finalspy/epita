@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Destinations Internationales</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #242836;
+    --border: #2e3347;
+    --text: #e4e6f0;
+    --text-dim: #8b90a8;
+    --accent: #6c8cff;
+    --accent2: #a78bfa;
+    --exchange: #34d399;
+    --paid: #fb923c;
+    --closed: #ef4444;
+    --erasmus: #38bdf8;
+    --dd: #f472b6;
+    --summer: #facc15;
+    --radius: 8px;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+  }
+
+  header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .filters {
+    padding: 1rem 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+  }
+
+  .filter-group label {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  select {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .45rem .8rem;
+    font-size: .85rem;
+    font-family: var(--font);
+    cursor: pointer;
+    min-width: 160px;
+    appearance: auto;
+  }
+
+  select:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+  .stats {
+    margin-left: auto;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: .65rem;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    letter-spacing: .06em;
+  }
+
+  .legend {
+    padding: .75rem 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: .75rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    color: var(--text-dim);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  main {
+    padding: 1.5rem 2rem;
+  }
+
+  .continent-section {
+    margin-bottom: 2rem;
+  }
+
+  .continent-header {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent2);
+    padding: .5rem 0;
+    border-bottom: 2px solid var(--accent2);
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .continent-count {
+    font-size: .75rem;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
+  .country-section {
+    margin-bottom: 1.25rem;
+  }
+
+  .country-name {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: .5rem;
+    padding-left: .5rem;
+    border-left: 3px solid var(--border);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .8rem;
+    table-layout: fixed;
+  }
+
+  table .col-uni { width: 40%; }
+  table .col-period { width: 12%; }
+
+  thead th {
+    background: var(--surface2);
+    padding: .5rem .6rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-dim);
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  tbody td {
+    padding: .45rem .6rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  tbody tr:hover { background: var(--surface2); }
+
+  .uni-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cell-badge {
+    display: inline-block;
+    padding: .15rem .55rem;
+    border-radius: 99px;
+    font-size: .7rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .badge-echange { background: rgba(52,211,153,.15); color: var(--exchange); }
+  .badge-payant { background: rgba(251,146,60,.15); color: var(--paid); }
+  .badge-ferme { background: rgba(239,68,68,.12); color: var(--closed); text-decoration: line-through; }
+  .badge-erasmus { background: rgba(56,189,248,.15); color: var(--erasmus); }
+  .badge-dd { background: rgba(244,114,182,.15); color: var(--dd); }
+  .badge-summer { background: rgba(250,204,21,.15); color: var(--summer); }
+  .badge-mixed { background: rgba(108,140,255,.12); color: var(--accent); }
+
+  .empty-cell { color: var(--border); }
+
+  .no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-dim);
+    font-size: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    header, .filters, .legend, main { padding-left: 1rem; padding-right: 1rem; }
+    .filters { flex-direction: column; align-items: stretch; }
+    .stats { margin-left: 0; justify-content: flex-start; }
+    select { min-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌍 Destinations Internationales — Programmes d'échange</h1>
+</header>
+
+<div class="filters" id="filters">
+  <div class="filter-group">
+    <label>Continent</label>
+    <select id="fContinent"><option value="">Tous</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Pays</label>
+    <select id="fCountry"><option value="">Tous</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Période</label>
+    <select id="fPeriod">
+      <option value="">Toutes</option>
+      <option value="s4">S4</option>
+      <option value="s9">S9</option>
+      <option value="bachelor">Bachelor Cyber</option>
+      <option value="dd">Double diplôme</option>
+      <option value="summer">Summer program</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Type</label>
+    <select id="fType">
+      <option value="">Tous</option>
+      <option value="echange">Échange</option>
+      <option value="erasmus">Erasmus</option>
+      <option value="payant">Payant</option>
+      <option value="ferme">Fermé</option>
+    </select>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="statUni">0</div><div class="stat-label">Universités</div></div>
+    <div class="stat"><div class="stat-val" id="statCountry">0</div><div class="stat-label">Pays</div></div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot" style="background:var(--exchange)"></span> Échange</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--erasmus)"></span> Erasmus</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--paid)"></span> Payant</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--closed)"></span> Fermé</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--dd)"></span> Double diplôme</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--summer)"></span> Summer</div>
+</div>
+
+<main id="main"></main>
+
+<script>
+const DATA = [
+  // AFRIQUE
+  {c:"AFRIQUE",p:"AFRIQUE DU SUD",u:"Stellenbosch University",s4:"payant",s9:"fermé",bachelor:"",dd:"",summer:""},
+  {c:"AFRIQUE",p:"MAROC",u:"Université internationale de Rabat",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:""},
+  {c:"AFRIQUE",p:"SÉNÉGAL",u:"Dakar Institute of Technology",s4:"échange",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"AFRIQUE",p:"TUNISIE",u:"MUST",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:""},
+  // AMÉRIQUES
+  {c:"AMÉRIQUES",p:"BOLIVIE",u:"Universidad Privada Boliviana (UPB)",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"BRÉSIL",u:"PUC de Minas Gerais (PUC de Minas)",s4:"échange",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"BRÉSIL",u:"PUC do Parana (PUC PR)",s4:"",s9:"fermé",bachelor:"",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"BRÉSIL",u:"Universidade do Estado de Santa Catarina (UDESC)",s4:"échange",s9:"fermé",bachelor:"échange",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"CANADA",u:"BCIT",s4:"payant",s9:"payant",bachelor:"",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"CANADA",u:"UQAC Université du Québec A Chicoutimi",s4:"échange/payant",s9:"",bachelor:"",dd:"payant",summer:""},
+  {c:"AMÉRIQUES",p:"CANADA",u:"Concordia",s4:"",s9:"",bachelor:"",dd:"payant",summer:""},
+  {c:"AMÉRIQUES",p:"COLOMBIE",u:"Universidad De Los Andes",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"MEXIQUE",u:"Tecnológico de Monterrey",s4:"échange",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"PÉROU",u:"University of Engineering and Technology (UTEC)",s4:"",s9:"échange",bachelor:"",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"Boston University",s4:"payant",s9:"payant",bachelor:"payant",dd:"payant",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"California State University Monterey Bay (CSUMB)",s4:"payant/échange",s9:"",bachelor:"payant",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"California State University Los Angeles (Cal State LA)",s4:"fermé pour 25/26",s9:"fermé pour 25/26",bachelor:"fermé pour 25/26",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"Georgia Institute of Technology (Georgia Tech)",s4:"",s9:"",bachelor:"",dd:"payant",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"Hawai Pacific University",s4:"payant",s9:"payant",bachelor:"payant",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"Hartwick College",s4:"payant",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"Illinois Institute of Technology (Illinois Tech)",s4:"",s9:"",bachelor:"",dd:"payant",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"North Park University",s4:"payant",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"San Francisco State University (SFSU)",s4:"payant/échange",s9:"payant",bachelor:"payant",dd:"",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"Stevens Institute of Technology",s4:"",s9:"",bachelor:"",dd:"payant",summer:""},
+  {c:"AMÉRIQUES",p:"USA",u:"UC Berkeley (Summer School)",s4:"",s9:"",bachelor:"",dd:"",summer:"payant"},
+  {c:"AMÉRIQUES",p:"USA",u:"Westcliff University",s4:"payant",s9:"payant",bachelor:"payant",dd:"",summer:""},
+  // ASIE
+  {c:"ASIE",p:"CHINE",u:"Beijing Institute of Technology (BIT)",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:"gratuite"},
+  {c:"ASIE",p:"CHINE",u:"Beijing Jiao Tong University (BJTU)",s4:"échange",s9:"fermé",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"CHINE",u:"City University of Hong Kong",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"CHINE",u:"Hong Kong Metropolitan University",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"CHINE",u:"Jiangnan University (JNU)",s4:"échange",s9:"fermé",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"CHINE",u:"Nanjing University of Science and Technology (NUST)",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"CHINE",u:"Northeastern University (NEU)",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"CHINE",u:"Guangding Technion - Israel Institute of Technology (GTIIT)",s4:"fermé",s9:"fermé",bachelor:"fermé",dd:"",summer:""},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"Ewha Womans University",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"Gwangju Institute of Science & Technology",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"Hanyang University",s4:"échange",s9:"fermé",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"INHA University",s4:"échange",s9:"fermé",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"Konkuk University",s4:"",s9:"échange",bachelor:"",dd:"",summer:"payant"},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"Kyung Hee University",s4:"échange",s9:"fermé",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"Kyungpook National University (KNU)",s4:"échange",s9:"fermé",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"Sejong University",s4:"échange",s9:"fermé",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"Seoul National University of Science & Technology (Seoul Tech)",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:"payant"},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"University of Seoul (UoS)",s4:"échange",s9:"fermé",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"CORÉE DU SUD",u:"Sungkyunkwan University",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"INDE",u:"Chandigarh University",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"INDE",u:"Chitkara University",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"INDE",u:"University of Petroleum and Energy Studies (UPES)",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"INDE",u:"Indian Institute of Technology Jodhpur (IITJ)",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"INDE",u:"Presidency University",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"INDE",u:"SRM Chennai",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"INDONÉSIE",u:"Institut Teknologi Sepuluh Nopember (ITS)",s4:"échange",s9:"fermé",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"JAPON",u:"Shibaura Institute of Technology",s4:"échange",s9:"échange",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"JAPON",u:"International College of Liberal Arts (iCLA) – Yamanashi Gakuin University",s4:"payant",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"MALAISIE",u:"MMU Multimédia University",s4:"échange",s9:"fermé",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"MALAISIE",u:"Heriot-Watt University (Malaisie)",s4:"payant",s9:"payant",bachelor:"payant",dd:"payant",summer:""},
+  {c:"ASIE",p:"MALAISIE",u:"Universiti Putra Malaysia",s4:"payant",s9:"payant",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"SINGAPOUR",u:"James Cook University",s4:"payant",s9:"payant",bachelor:"payant",dd:"",summer:""},
+  {c:"ASIE",p:"TAÏWAN",u:"National Chung Cheng University (CCU)",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"TAÏWAN",u:"National Cheng Kung University (NCKU)",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"TAÏWAN",u:"National Dong Hwa University (NDHU)",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"THAÏLANDE",u:"Chulalongkorn University",s4:"échange",s9:"",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"THAÏLANDE",u:"King Mongkut's University of Technology Thonburi (KMUTT)",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"THAÏLANDE",u:"Mahidol University",s4:"échange",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"ASIE",p:"VIETNAM",u:"FPT University",s4:"échange",s9:"",bachelor:"échange",dd:"",summer:""},
+  {c:"ASIE",p:"VIETNAM",u:"Hongbang University",s4:"fermé",s9:"",bachelor:"fermé",dd:"",summer:""},
+  {c:"ASIE",p:"VIETNAM",u:"RMIT Vietnam",s4:"payant",s9:"payant",bachelor:"payant",dd:"",summer:""},
+  // EUROPE
+  {c:"EUROPE",p:"AUTRICHE",u:"Graz University of Technology",s4:"erasmus",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"ALLEMAGNE",u:"Rhine-Waal University of Applied Sciences",s4:"",s9:"fermé",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"BELGIQUE",u:"Haute Ecole de la Province de Liège (HEPL)",s4:"",s9:"",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"BELGIQUE",u:"Haute Ecole de la Ville de Liège (HEL)",s4:"",s9:"",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"BELGIQUE",u:"Haute Ecole Louvain en Hainault (HELHA)",s4:"",s9:"",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"CROATIE",u:"Algebra University College",s4:"erasmus",s9:"",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"ESPAGNE",u:"The University of the Basque Country (UPV-EHU)",s4:"erasmus",s9:"erasmus (fermé pour 2026)",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"ESPAGNE",u:"Universidad Politecnica de Madrid (UPM)",s4:"erasmus",s9:"erasmus",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"ESPAGNE",u:"ENAE",s4:"",s9:"",bachelor:"",dd:"payant",summer:""},
+  {c:"EUROPE",p:"ESPAGNE",u:"Barcelona Technology School",s4:"",s9:"",bachelor:"",dd:"payant",summer:""},
+  {c:"EUROPE",p:"FINLANDE",u:"Centria University of Applied Sciences",s4:"erasmus",s9:"",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"FINLANDE",u:"Tampere University of Technology (TUT)",s4:"erasmus",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"GÉORGIE",u:"Alte University",s4:"échange",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"GRÈCE",u:"American College of Greece",s4:"échange",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"HONGRIE",u:"Université Polytechnique et Economique de Budapest",s4:"",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"EUROPE",p:"IRLANDE",u:"Dorset College",s4:"payant",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"IRLANDE",u:"University of Limerick",s4:"payant",s9:"payant (fermé pour fall 26)",bachelor:"payant",dd:"",summer:""},
+  {c:"EUROPE",p:"IRLANDE",u:"Atlantic Technological University Sligo - ATU Sligo (IT Sligo)",s4:"erasmus/payant",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"IRLANDE",u:"Dublin Business School",s4:"payant",s9:"payant",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"ITALIE",u:"La Sapienza Universita Di Roma",s4:"erasmus",s9:"erasmus (fermé pour Fall 26)",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"ITALIE",u:"Politecnico di Milano",s4:"",s9:"erasmus",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"LETTONIE",u:"RTU Liepaja",s4:"erasmus",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"LETTONIE",u:"Riga Technical University (RTU)",s4:"erasmus",s9:"",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"LETTONIE",u:"Transport and Telecommunication Institute (TSI)",s4:"erasmus",s9:"erasmus",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"LETTONIE",u:"Turiba University",s4:"erasmus",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"LITUANIE",u:"Vilnius Tech",s4:"erasmus",s9:"erasmus",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"MALTE",u:"Malta College of Arts, Science and Technology (MCAST)",s4:"",s9:"",bachelor:"",dd:"",summer:"payant"},
+  {c:"EUROPE",p:"NORVÈGE",u:"Norwegian University of Science and Technology (NTNU)",s4:"",s9:"fermé (2026)",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"NORVÈGE",u:"University of Bergen (UiB)",s4:"erasmus",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"PAYS-BAS",u:"Fontys University of Applied Sciences",s4:"erasmus",s9:"",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"PAYS-BAS",u:"University of Amsterdam",s4:"",s9:"erasmus",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"POLOGNE",u:"Cracow University of Technology (Politechnika Krakowska)",s4:"erasmus",s9:"",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"POLOGNE",u:"University of Economics and Human Sciences in Warsaw (Vizja)",s4:"erasmus",s9:"erasmus (fermé pour Fall 26)",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"POLOGNE",u:"Bialystok University of Technology",s4:"",s9:"erasmus",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"PORTUGAL",u:"Instituto Superior de Engenharia do Porto (ISEP)",s4:"",s9:"erasmus",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"RÉPUBLIQUE TCHÈQUE",u:"Brno University of Technology",s4:"",s9:"fermé (2026)",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"RÉPUBLIQUE TCHÈQUE",u:"Czech Technical University in Prague (CTU)",s4:"erasmus",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"RÉPUBLIQUE TCHÈQUE",u:"Masaryk University",s4:"",s9:"erasmus",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"RÉPUBLIQUE TCHÈQUE",u:"Unicorn University",s4:"erasmus",s9:"",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"RÉPUBLIQUE TCHÈQUE",u:"University of Hradec Kralove",s4:"erasmus",s9:"erasmus (fermé pour Fall 26)",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"ROYAUME-UNI",u:"Heriot-Watt University (Écosse)",s4:"payant",s9:"payant",bachelor:"payant",dd:"payant",summer:""},
+  {c:"EUROPE",p:"SUISSE",u:"OST University of Applied Sciences of Eastern Switzerland",s4:"échange",s9:"fermé",bachelor:"échange",dd:"",summer:""},
+  {c:"EUROPE",p:"SUÈDE",u:"Stockholm University",s4:"erasmus",s9:"fermé (2026)",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"TURQUIE",u:"Bahcesehir University Istanbul (BAU)",s4:"erasmus",s9:"erasmus",bachelor:"erasmus",dd:"",summer:""},
+  {c:"EUROPE",p:"TURQUIE",u:"Bilkent University",s4:"fermé",s9:"fermé",bachelor:"fermé",dd:"",summer:""},
+  {c:"EUROPE",p:"TURQUIE",u:"Gebze Teknik Universitesi",s4:"erasmus",s9:"fermé",bachelor:"",dd:"",summer:""},
+  {c:"EUROPE",p:"TURQUIE",u:"Sakarya University",s4:"erasmus",s9:"",bachelor:"",dd:"",summer:""},
+  // MOYEN-ORIENT
+  {c:"MOYEN-ORIENT",p:"BAHREÏN",u:"Ahlia University",s4:"échange",s9:"",bachelor:"échange",dd:"",summer:""},
+  {c:"MOYEN-ORIENT",p:"ÉMIRATS ARABES UNIS",u:"Ajman University",s4:"échange",s9:"échange",bachelor:"échange",dd:"",summer:""},
+  {c:"MOYEN-ORIENT",p:"ÉMIRATS ARABES UNIS",u:"Heriot-Watt University (EAU)",s4:"payant",s9:"payant",bachelor:"payant",dd:"payant",summer:""},
+  // OCÉANIE
+  {c:"OCÉANIE",p:"AUSTRALIE",u:"Murdoch University",s4:"payant",s9:"payant",bachelor:"payant",dd:"",summer:""},
+  {c:"OCÉANIE",p:"AUSTRALIE",u:"Royal Melbourne Institute of Technology RMIT",s4:"payant",s9:"payant",bachelor:"payant",dd:"",summer:""},
+  {c:"OCÉANIE",p:"NOUVELLE-ZÉLANDE",u:"Auckland University of Technology AUT",s4:"payant",s9:"payant",bachelor:"payant",dd:"",summer:""},
+  {c:"OCÉANIE",p:"NOUVELLE-ZÉLANDE",u:"University of Auckland",s4:"payant",s9:"",bachelor:"payant",dd:"",summer:""},
+];
+
+const PERIODS = ['s4','s9','bachelor','dd','summer'];
+const PERIOD_LABELS = {s4:'S4',s9:'S9',bachelor:'Bachelor Cyber',dd:'Double diplôme',summer:'Summer'};
+
+function classify(val) {
+  if (!val) return null;
+  const v = val.toLowerCase();
+  if (v.includes('fermé')) return 'ferme';
+  if (v.includes('erasmus') && v.includes('payant')) return 'mixed';
+  if (v.includes('échange') && v.includes('payant')) return 'mixed';
+  if (v.includes('erasmus')) return 'erasmus';
+  if (v.includes('échange')) return 'echange';
+  if (v.includes('payant')) return 'payant';
+  if (v.includes('gratuit')) return 'echange';
+  return 'echange';
+}
+
+function badge(val) {
+  if (!val) return '<span class="empty-cell">—</span>';
+  const cls = classify(val);
+  const bcls = cls === 'echange' ? 'badge-echange' : cls === 'erasmus' ? 'badge-erasmus' : cls === 'payant' ? 'badge-payant' : cls === 'ferme' ? 'badge-ferme' : 'badge-mixed';
+  return `<span class="cell-badge ${bcls}">${val}</span>`;
+}
+
+function populateFilters() {
+  const continents = [...new Set(DATA.map(d=>d.c))].sort();
+  const sel = document.getElementById('fContinent');
+  continents.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
+  updateCountryFilter();
+}
+
+function updateCountryFilter() {
+  const fc = document.getElementById('fContinent').value;
+  const countries = [...new Set(DATA.filter(d=> !fc || d.c===fc).map(d=>d.p))].sort();
+  const sel = document.getElementById('fCountry');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Tous</option>';
+  countries.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
+  if (countries.includes(cur)) sel.value = cur;
+}
+
+function matchesType(val, type) {
+  if (!type) return true;
+  if (!val) return false;
+  const v = val.toLowerCase();
+  if (type === 'echange') return v.includes('échange');
+  if (type === 'erasmus') return v.includes('erasmus');
+  if (type === 'payant') return v.includes('payant');
+  if (type === 'ferme') return v.includes('fermé');
+  return false;
+}
+
+function filter() {
+  const fc = document.getElementById('fContinent').value;
+  const fp = document.getElementById('fCountry').value;
+  const fperiod = document.getElementById('fPeriod').value;
+  const ftype = document.getElementById('fType').value;
+
+  return DATA.filter(d => {
+    if (fc && d.c !== fc) return false;
+    if (fp && d.p !== fp) return false;
+    if (fperiod || ftype) {
+      const periods = fperiod ? [fperiod] : PERIODS;
+      const hasMatch = periods.some(p => {
+        const val = d[p];
+        if (!val) return false;
+        if (ftype && !matchesType(val, ftype)) return false;
+        return true;
+      });
+      if (!hasMatch) return false;
+    }
+    return true;
+  });
+}
+
+function render() {
+  const data = filter();
+  const main = document.getElementById('main');
+
+  document.getElementById('statUni').textContent = data.length;
+  document.getElementById('statCountry').textContent = new Set(data.map(d=>d.p)).size;
+
+  if (!data.length) { main.innerHTML = '<div class="no-results">Aucun résultat pour ces filtres.</div>'; return; }
+
+  const grouped = {};
+  data.forEach(d => {
+    if (!grouped[d.c]) grouped[d.c] = {};
+    if (!grouped[d.c][d.p]) grouped[d.c][d.p] = [];
+    grouped[d.c][d.p].push(d);
+  });
+
+  const fperiod = document.getElementById('fPeriod').value;
+  const visiblePeriods = fperiod ? [fperiod] : PERIODS;
+
+  let html = '';
+  const continentOrder = ['AFRIQUE','AMÉRIQUES','ASIE','EUROPE','MOYEN-ORIENT','OCÉANIE'];
+  continentOrder.forEach(cont => {
+    if (!grouped[cont]) return;
+    const countries = Object.keys(grouped[cont]).sort();
+    const total = countries.reduce((s,c) => s + grouped[cont][c].length, 0);
+    html += `<div class="continent-section">`;
+    html += `<div class="continent-header"><span>${cont}</span><span class="continent-count">${total} univ.</span></div>`;
+    countries.forEach(country => {
+      const unis = grouped[cont][country];
+      html += `<div class="country-section">`;
+      html += `<div class="country-name">${country}</div>`;
+      const pctPeriod = Math.floor(60 / visiblePeriods.length);
+      html += `<div class="table-wrap"><table><colgroup><col style="width:${100 - pctPeriod * visiblePeriods.length}%">`;
+      visiblePeriods.forEach(() => html += `<col style="width:${pctPeriod}%">`);
+      html += `</colgroup><thead><tr><th>Université</th>`;
+      visiblePeriods.forEach(p => html += `<th>${PERIOD_LABELS[p]}</th>`);
+      html += `</tr></thead><tbody>`;
+      unis.forEach(u => {
+        html += `<tr><td class="uni-name" title="${u.u}">${u.u}</td>`;
+        visiblePeriods.forEach(p => html += `<td>${badge(u[p])}</td>`);
+        html += `</tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+    });
+    html += `</div>`;
+  });
+  main.innerHTML = html;
+}
+
+document.getElementById('fContinent').addEventListener('change', () => { updateCountryFilter(); render(); });
+document.getElementById('fCountry').addEventListener('change', render);
+document.getElementById('fPeriod').addEventListener('change', render);
+document.getElementById('fType').addEventListener('change', render);
+
+populateFilters();
+render();
+</script>
+</body>
+</html>

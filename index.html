@@ -459,6 +459,57 @@
     background: var(--surface);
   }
 
+  .active-filters {
+    padding: .55rem 1.25rem .1rem;
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .active-filters[hidden] {
+    display: none;
+  }
+
+  .active-filters-label {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-dim);
+    font-weight: 700;
+    margin-right: .1rem;
+  }
+
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface2);
+    color: var(--text);
+    padding: .28rem .38rem .28rem .62rem;
+    font-size: .74rem;
+    line-height: 1;
+  }
+
+  .filter-chip-remove {
+    cursor: pointer;
+    border: 0;
+    background: transparent;
+    color: var(--text-dim);
+    font: inherit;
+    font-size: .9rem;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .filter-chip-remove:hover {
+    color: var(--text);
+  }
+
   .legend-item {
     display: flex;
     align-items: center;
@@ -827,6 +878,10 @@
     .legend {
       gap: .55rem;
     }
+    .active-filters {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
     .continent-header,
     .country-toggle {
       padding-left: .72rem;
@@ -930,6 +985,8 @@
         <div class="stat"><div class="stat-val" id="statCountry">0</div><div class="stat-label">Pays</div></div>
       </div>
     </div>
+
+    <div class="active-filters" id="activeFilters" hidden></div>
 
     <div class="legend">
       <div class="legend-item"><span class="legend-dot" style="background:var(--exchange)"></span> Échange</div>
@@ -1300,6 +1357,57 @@ function summarizeSelection(filterKey, options) {
   return `${labels.length} sélectionnés`;
 }
 
+function getOptionLabel(filterKey, value) {
+  const options = FILTER_MENU_CONFIG[filterKey].getOptions();
+  for (let index = 0; index < options.length; index += 1) {
+    if (options[index].value === value) return options[index].label;
+  }
+  return value;
+}
+
+function renderActiveFilters() {
+  const container = document.getElementById('activeFilters');
+  const chips = [];
+
+  if (uiState.filters.search.trim()) {
+    chips.push(`
+      <span class="filter-chip">
+        <span>Recherche: ${escapeHtml(uiState.filters.search.trim())}</span>
+        <button type="button" class="filter-chip-remove" data-action="remove-filter-chip" data-chip-kind="search" aria-label="Retirer le filtre de recherche">×</button>
+      </span>
+    `);
+  }
+
+  if (uiState.filters.favoritesOnly) {
+    chips.push(`
+      <span class="filter-chip">
+        <span>Favoris uniquement</span>
+        <button type="button" class="filter-chip-remove" data-action="remove-filter-chip" data-chip-kind="favorites" aria-label="Retirer le filtre favoris">×</button>
+      </span>
+    `);
+  }
+
+  ['continents', 'countries', 'periods', 'types'].forEach(filterKey => {
+    [...uiState.filters[filterKey]].forEach(value => {
+      chips.push(`
+        <span class="filter-chip">
+          <span>${escapeHtml(getOptionLabel(filterKey, value))}</span>
+          <button type="button" class="filter-chip-remove" data-action="remove-filter-chip" data-chip-kind="set" data-filter="${filterKey}" data-value="${escapeHtml(value)}" aria-label="Retirer le filtre ${escapeHtml(getOptionLabel(filterKey, value))}">×</button>
+        </span>
+      `);
+    });
+  });
+
+  if (!chips.length) {
+    container.hidden = true;
+    container.innerHTML = '';
+    return;
+  }
+
+  container.hidden = false;
+  container.innerHTML = `<span class="active-filters-label">Filtres actifs</span>${chips.join('')}`;
+}
+
 function renderFilterMenu(filterKey) {
   const config = FILTER_MENU_CONFIG[filterKey];
   const options = config.getOptions();
@@ -1326,6 +1434,7 @@ function renderFilterControls() {
   renderFilterMenu('types');
   document.getElementById('fSearch').value = uiState.filters.search;
   document.getElementById('fFavorites').checked = uiState.filters.favoritesOnly;
+  renderActiveFilters();
   saveFilters();
 }
 
@@ -1539,6 +1648,22 @@ document.getElementById('filters').addEventListener('click', event => {
 document.getElementById('fSearch').addEventListener('input', event => {
   uiState.filters.search = event.target.value;
   saveFilters();
+  render();
+});
+
+document.getElementById('activeFilters').addEventListener('click', event => {
+  const actionTarget = closestSelector(event.target, '[data-action="remove-filter-chip"]');
+  if (!actionTarget) return;
+
+  if (actionTarget.dataset.chipKind === 'search') {
+    uiState.filters.search = '';
+  } else if (actionTarget.dataset.chipKind === 'favorites') {
+    uiState.filters.favoritesOnly = false;
+  } else if (actionTarget.dataset.chipKind === 'set') {
+    uiState.filters[actionTarget.dataset.filter].delete(actionTarget.dataset.value);
+  }
+
+  renderFilterControls();
   render();
 });
 

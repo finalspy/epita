@@ -84,6 +84,11 @@
     padding: 1.2rem 1.25rem .75rem;
     border-bottom: 1px solid var(--border);
     background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
   }
 
   header h1 {
@@ -93,6 +98,10 @@
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+  }
+
+  .header-theme-toggle {
+    flex-shrink: 0;
   }
 
   .toolbar {
@@ -108,9 +117,18 @@
   .toolbar-bar {
     padding: .55rem 1.25rem;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: .75rem;
+  }
+
+  .toolbar-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: .7rem;
+    flex-wrap: wrap;
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .toolbar-title {
@@ -119,6 +137,8 @@
     letter-spacing: .08em;
     color: var(--text-dim);
     font-weight: 700;
+    flex-shrink: 0;
+    padding-top: .35rem;
   }
 
   .toolbar-actions {
@@ -143,6 +163,33 @@
 
   .toolbar-btn:hover {
     border-color: var(--accent);
+  }
+
+  .toolbar-icon-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .toolbar-icon {
+    width: 15px;
+    height: 15px;
+    display: block;
+  }
+
+  .toolbar-feedback {
+    min-width: 62px;
+    color: var(--text-dim);
+    font-size: .72rem;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .toolbar-feedback.is-visible {
+    color: var(--accent);
   }
 
   .theme-toggle {
@@ -214,7 +261,7 @@
   .filters {
     padding: .75rem 1.25rem;
     display: grid;
-    grid-template-columns: minmax(220px, 320px) repeat(5, minmax(120px, 1fr)) minmax(170px, 220px) auto;
+    grid-template-columns: minmax(220px, 320px) repeat(4, minmax(130px, 1fr)) minmax(170px, 220px) auto;
     gap: .65rem;
     align-items: end;
     border-bottom: 1px solid var(--border);
@@ -479,16 +526,22 @@
   }
 
   .active-filters {
-    padding: .55rem 1.25rem .1rem;
     display: flex;
     align-items: center;
     gap: .45rem;
     flex-wrap: wrap;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
   }
 
   .active-filters[hidden] {
+    display: none;
+  }
+
+  .active-filters--inline {
+    min-width: 0;
+    flex: 1 1 320px;
+  }
+
+  .active-filters--inline .active-filters-label {
     display: none;
   }
 
@@ -527,6 +580,23 @@
 
   .filter-chip-remove:hover {
     color: var(--text);
+  }
+
+  footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 110;
+    padding: .9rem 1.25rem 1.2rem;
+    border-top: 1px solid var(--border);
+    background: var(--toolbar-bg);
+    backdrop-filter: blur(14px);
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem 1.25rem;
+    flex-wrap: wrap;
+    font-size: .76rem;
   }
 
   .legend-item {
@@ -846,6 +916,7 @@
     header {
       padding-top: 1rem;
       padding-bottom: .65rem;
+      align-items: flex-start;
     }
     header h1 {
       font-size: 1.1rem;
@@ -855,6 +926,9 @@
       flex-direction: column;
       align-items: stretch;
       gap: .45rem;
+    }
+    .toolbar-heading {
+      width: 100%;
     }
     .toolbar-actions {
       width: 100%;
@@ -876,9 +950,6 @@
       margin-top: .35rem;
       box-shadow: none;
     }
-    .theme-toggle {
-      order: -1;
-    }
     .filter-group--favorites {
       justify-self: stretch;
       min-width: 0;
@@ -897,9 +968,9 @@
     .legend {
       gap: .55rem;
     }
-    .active-filters {
-      padding-left: 1rem;
-      padding-right: 1rem;
+    .active-filters--inline {
+      width: 100%;
+      flex-basis: auto;
     }
     .continent-header,
     .country-toggle {
@@ -918,17 +989,26 @@
 
 <header>
   <h1>🌍 Destinations Internationales — Programmes d'échange</h1>
+  <label class="theme-toggle header-theme-toggle">
+    <input id="themeToggle" type="checkbox">
+    <span class="theme-switch" aria-hidden="true"></span>
+    <span class="theme-toggle-label" id="themeLabel">Sombre</span>
+  </label>
 </header>
 
 <div class="toolbar" id="toolbar">
   <div class="toolbar-bar">
-    <div class="toolbar-title">Filtres et légende</div>
+    <div class="toolbar-heading">
+      <div class="toolbar-title">Filtres et légende</div>
+      <div class="active-filters active-filters--inline" id="activeFilters" hidden></div>
+    </div>
     <div class="toolbar-actions">
-      <label class="theme-toggle">
-        <input id="themeToggle" type="checkbox">
-        <span class="theme-switch" aria-hidden="true"></span>
-        <span class="theme-toggle-label" id="themeLabel">Sombre</span>
-      </label>
+      <button class="toolbar-btn toolbar-icon-btn" id="shareLink" type="button" aria-label="Copier l'URL de cette vue" title="Copier l'URL de cette vue">
+        <svg class="toolbar-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M10.59 13.41a1 1 0 0 1 0-1.41l4-4H13a1 1 0 1 1 0-2h4a2 2 0 0 1 2 2v4a1 1 0 1 1-2 0v-1.59l-4 4a1 1 0 0 1-1.41 0ZM6 6h5a1 1 0 1 1 0 2H6v10h10v-5a1 1 0 1 1 2 0v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"></path>
+        </svg>
+      </button>
+      <span class="toolbar-feedback" id="shareFeedback" aria-live="polite"></span>
       <button class="toolbar-btn" id="resetFilters" type="button">Reset</button>
       <button class="toolbar-btn" id="toolbarToggle" type="button" aria-expanded="true" aria-controls="toolbarPanel">Masquer</button>
     </div>
@@ -991,14 +1071,6 @@
           </div>
         </details>
       </div>
-      <div class="filter-group">
-        <label for="fSort">Tri</label>
-        <select class="control-input" id="fSort">
-          <option value="country-asc">Pays A-Z</option>
-          <option value="university-asc">Universités A-Z</option>
-          <option value="availability-desc">Plus d'options</option>
-        </select>
-      </div>
       <div class="filter-group filter-group--favorites">
         <label>Favoris</label>
         <label class="favorite-toggle">
@@ -1012,22 +1084,25 @@
         <div class="stat"><div class="stat-val" id="statCountry">0</div><div class="stat-label">Pays</div></div>
       </div>
     </div>
+  </div>
 
-    <div class="active-filters" id="activeFilters" hidden></div>
-
-    <div class="legend">
-      <div class="legend-item"><span class="legend-dot" style="background:var(--exchange)"></span> Échange</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--erasmus)"></span> Erasmus</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--paid)"></span> Payant</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--closed)"></span> Fermé</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--dd)"></span> Double diplôme</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--summer)"></span> Summer</div>
-      <div class="legend-item"><span class="legend-star">★</span> Favori</div>
-    </div>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--exchange)"></span> Échange</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--erasmus)"></span> Erasmus</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--paid)"></span> Payant</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--closed)"></span> Fermé</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--dd)"></span> Double diplôme</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--summer)"></span> Summer</div>
+    <div class="legend-item"><span class="legend-star">★</span> Favori</div>
   </div>
 </div>
 
 <main id="main"></main>
+
+<footer>
+  <span>Dernière MAJ des données : 06/04/2025</span>
+  <span>Made by YPetit 2026</span>
+</footer>
 
 <script>
 const DATA = [
@@ -1265,12 +1340,11 @@ function createEmptyFilters() {
     types: new Set(),
     search: '',
     favoritesOnly: false,
-    sort: 'country-asc',
   };
 }
 
 function hasUrlFilterState(params) {
-  return ['continent', 'country', 'period', 'type', 'q', 'favorites', 'sort'].some(key => params.has(key));
+  return ['continent', 'country', 'period', 'type', 'q', 'favorites'].some(key => params.has(key));
 }
 
 function loadFiltersFromUrl() {
@@ -1286,7 +1360,6 @@ function loadFiltersFromUrl() {
     empty.types = setFromArray(params.getAll('type'));
     empty.search = params.get('q') || '';
     empty.favoritesOnly = ['1', 'true', 'yes'].includes(String(params.get('favorites') || '').toLowerCase());
-    empty.sort = params.get('sort') || 'country-asc';
     return empty;
   } catch {
     return null;
@@ -1307,7 +1380,6 @@ function loadFilters() {
       types: setFromArray(parsed.types),
       search: typeof parsed.search === 'string' ? parsed.search : '',
       favoritesOnly: Boolean(parsed.favoritesOnly),
-      sort: typeof parsed.sort === 'string' ? parsed.sort : 'country-asc',
     };
   } catch {
     return createEmptyFilters();
@@ -1325,7 +1397,6 @@ function syncFiltersToUrl() {
 
     if (uiState.filters.search.trim()) params.set('q', uiState.filters.search.trim());
     if (uiState.filters.favoritesOnly) params.set('favorites', '1');
-    if (uiState.filters.sort && uiState.filters.sort !== 'country-asc') params.set('sort', uiState.filters.sort);
 
     const query = params.toString();
     const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash || ''}`;
@@ -1344,7 +1415,6 @@ function saveFilters() {
       types: [...uiState.filters.types],
       search: uiState.filters.search,
       favoritesOnly: uiState.filters.favoritesOnly,
-      sort: uiState.filters.sort,
     }));
   } catch {
     // Ignore storage failures in file:// contexts or private sessions.
@@ -1549,7 +1619,6 @@ function renderFilterControls() {
   renderFilterMenu('types');
   document.getElementById('fSearch').value = uiState.filters.search;
   document.getElementById('fFavorites').checked = uiState.filters.favoritesOnly;
-  document.getElementById('fSort').value = uiState.filters.sort;
   renderActiveFilters();
   saveFilters();
 }
@@ -1558,6 +1627,61 @@ function closeFilterMenus(exceptMenu = null) {
   forEachNode(document.querySelectorAll('.filter-menu[open]'), menu => {
     if (menu !== exceptMenu) menu.open = false;
   });
+}
+
+let shareFeedbackTimer = 0;
+
+function setShareFeedback(message, isSuccess) {
+  const feedback = document.getElementById('shareFeedback');
+  feedback.textContent = message;
+  feedback.classList.toggle('is-visible', Boolean(message) && isSuccess !== false);
+
+  if (shareFeedbackTimer) window.clearTimeout(shareFeedbackTimer);
+  if (!message) return;
+
+  shareFeedbackTimer = window.setTimeout(() => {
+    feedback.textContent = '';
+    feedback.classList.remove('is-visible');
+  }, 2000);
+}
+
+function copyTextFallback(text) {
+  const input = document.createElement('textarea');
+  input.value = text;
+  input.setAttribute('readonly', '');
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  input.style.pointerEvents = 'none';
+  document.body.appendChild(input);
+  input.select();
+  input.setSelectionRange(0, input.value.length);
+
+  let success = false;
+  try {
+    success = document.execCommand('copy');
+  } catch {
+    success = false;
+  }
+
+  document.body.removeChild(input);
+  return success;
+}
+
+function copyCurrentUrl() {
+  const url = window.location.href;
+
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(url)
+      .then(() => setShareFeedback('URL copiee', true))
+      .catch(() => {
+        const success = copyTextFallback(url);
+        setShareFeedback(success ? 'URL copiee' : 'Echec copie', success);
+      });
+    return;
+  }
+
+  const success = copyTextFallback(url);
+  setShareFeedback(success ? 'URL copiee' : 'Echec copie', success);
 }
 
 function matchesType(val, type) {
@@ -1683,62 +1807,9 @@ function resetFilters() {
   uiState.filters.types.clear();
   uiState.filters.search = '';
   uiState.filters.favoritesOnly = false;
-  uiState.filters.sort = 'country-asc';
   renderFilterControls();
   render();
   closeFilterMenus();
-}
-
-function compareText(a, b) {
-  return String(a).localeCompare(String(b), 'fr');
-}
-
-function getAvailabilityScore(item, periods) {
-  return periods.reduce((score, period) => {
-    const status = item[period];
-    const classification = classify(status);
-    return status && classification && classification !== 'ferme' ? score + 1 : score;
-  }, 0);
-}
-
-function sortCountries(countries, groupedByCountry, visiblePeriods) {
-  const sortMode = uiState.filters.sort;
-  const nextCountries = countries.slice();
-
-  nextCountries.sort((left, right) => {
-    if (sortMode === 'availability-desc') {
-      const leftScore = groupedByCountry[left].reduce((sum, item) => sum + getAvailabilityScore(item, visiblePeriods), 0);
-      const rightScore = groupedByCountry[right].reduce((sum, item) => sum + getAvailabilityScore(item, visiblePeriods), 0);
-      if (rightScore !== leftScore) return rightScore - leftScore;
-    }
-
-    if (sortMode === 'university-asc') {
-      const leftName = groupedByCountry[left].map(item => item.u).sort(compareText)[0] || left;
-      const rightName = groupedByCountry[right].map(item => item.u).sort(compareText)[0] || right;
-      const universityCompare = compareText(leftName, rightName);
-      if (universityCompare !== 0) return universityCompare;
-    }
-
-    return compareText(left, right);
-  });
-
-  return nextCountries;
-}
-
-function sortUniversities(universities, visiblePeriods) {
-  const sortMode = uiState.filters.sort;
-  const nextUniversities = universities.slice();
-
-  nextUniversities.sort((left, right) => {
-    if (sortMode === 'availability-desc') {
-      const scoreDiff = getAvailabilityScore(right, visiblePeriods) - getAvailabilityScore(left, visiblePeriods);
-      if (scoreDiff !== 0) return scoreDiff;
-    }
-
-    return compareText(left.u, right.u);
-  });
-
-  return nextUniversities;
 }
 
 function render() {
@@ -1768,7 +1839,7 @@ function render() {
   CONTINENT_ORDER.forEach(continent => {
     if (!grouped[continent]) return;
 
-    const countries = sortCountries(Object.keys(grouped[continent]), grouped[continent], visiblePeriods);
+    const countries = Object.keys(grouped[continent]).sort((a, b) => a.localeCompare(b, 'fr'));
     const total = countries.reduce((sum, country) => sum + grouped[continent][country].length, 0);
     const continentOpen = isSectionOpen(uiState.continentOpen, continent);
 
@@ -1781,7 +1852,7 @@ function render() {
 
     countries.forEach(country => {
       const countryKey = `${continent}__${country}`;
-      const universities = sortUniversities(grouped[continent][country], visiblePeriods);
+      const universities = grouped[continent][country].slice().sort((a, b) => a.u.localeCompare(b.u, 'fr'));
       const countryOpen = isSectionOpen(uiState.countryOpen, countryKey);
       const pctPeriod = Math.floor(60 / visiblePeriods.length);
 
@@ -1873,12 +1944,6 @@ document.getElementById('fSearch').addEventListener('input', event => {
   render();
 });
 
-document.getElementById('fSort').addEventListener('change', event => {
-  uiState.filters.sort = event.target.value;
-  saveFilters();
-  render();
-});
-
 document.getElementById('activeFilters').addEventListener('click', event => {
   const actionTarget = closestSelector(event.target, '[data-action="remove-filter-chip"]');
   if (!actionTarget) return;
@@ -1896,6 +1961,7 @@ document.getElementById('activeFilters').addEventListener('click', event => {
 });
 
 document.getElementById('resetFilters').addEventListener('click', resetFilters);
+document.getElementById('shareLink').addEventListener('click', copyCurrentUrl);
 document.getElementById('themeToggle').addEventListener('change', event => {
   applyTheme(event.target.checked ? 'light' : 'dark');
 });
